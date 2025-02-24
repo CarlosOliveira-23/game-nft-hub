@@ -3,7 +3,7 @@ from rest_framework import generics, status
 from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
 from rest_framework.serializers import ModelSerializer
-from rest_framework_simplejwt.tokens import RefreshToken
+from nft.services import UserService
 
 User = get_user_model()
 
@@ -14,13 +14,6 @@ class RegisterSerializer(ModelSerializer):
         fields = ('id', 'username', 'password')
         extra_kwargs = {'password': {'write_only': True}}
 
-    def create(self, validated_data):
-        user = User.objects.create_user(
-            username=validated_data['username'],
-            password=validated_data['password']
-        )
-        return user
-
 
 class RegisterView(generics.CreateAPIView):
     queryset = User.objects.all()
@@ -30,10 +23,15 @@ class RegisterView(generics.CreateAPIView):
     def create(self, request, *args, **kwargs):
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
-        user = serializer.save()
+        user_data = UserService.create_user(
+            username=serializer.validated_data["username"],
+            password=serializer.validated_data["password"],
+        )
 
-        refresh = RefreshToken.for_user(user)
-        return Response({
-            'refresh': str(refresh),
-            'access': str(refresh.access_token),
-        }, status=status.HTTP_201_CREATED)
+        return Response(
+            {
+                "refresh": user_data["refresh"],
+                "access": user_data["access"],
+            },
+            status=status.HTTP_201_CREATED,
+        )
