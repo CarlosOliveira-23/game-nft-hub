@@ -20,7 +20,7 @@ class NFT(models.Model):
         return self.name
 
 
-class Transaction(models.Model):  # Corrigido aqui!
+class Transaction(models.Model):
     nft = models.ForeignKey(NFT, on_delete=models.CASCADE, related_name="transactions")
     seller = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="sales")
     buyer = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="purchases")
